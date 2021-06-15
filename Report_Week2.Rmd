@@ -1,0 +1,151 @@
+---
+title: "Assignment week 02"
+author: "Andrés Betancourt"
+date: "6/15/2021"
+output: html_document
+---
+## Introduction:
+This report include the data Analysis from a personal activity monitoring device. This device **collects data at 5 minute intervals through out the day**. The data consists of **two months of data** from an anonymous individual collected during the **months of October and November, 2012** and include the number of steps taken in 5 minute intervals each day.
+Through the Analysis the R scripts to process the data will be include for more details.
+The Data, [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip), was downloaded and unziped into **Data** Folder from the working directory.
+
+### Loading the Libraries neededs:
+
+```{r echo=TRUE, results='hide', include=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+### Load the Data table:
+```{r echo=TRUE}
+rawData <- read.csv("Data/activity.csv")
+```
+
+### Histogram of Dayly Steps:
+
+```{r echo=TRUE}
+
+DaylySteps <- rawData %>%                                                     
+  group_by(Date = date) %>% 
+  summarize(Steps = sum(steps, na.rm = TRUE))
+
+ggplot(DaylySteps, aes(x= Steps)) +
+  geom_histogram(binwidth = 1000,color = "white", fill = "steelblue", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")
+```
+```{r, echo=FALSE}
+print(paste("The Mean is: ", as.character(round(mean(DaylySteps$Steps), 3))))
+```
+
+### Dayly Mean of number of steps by 5 mins
+
+```{r echo=TRUE}
+CentralMeasures1 <- rawData %>%
+  group_by(date = date) %>% 
+  summarize( mean.step = mean(steps, na.rm = TRUE),
+             median.step = median(steps, na.rm = TRUE))
+
+CentralMeasures1 <- as.data.frame(CentralMeasures1)
+CentralMeasures1$date <- as.Date(CentralMeasures1$date)
+
+ggplot(data= na.omit(CentralMeasures1), aes(x = date, y = mean.step)) +
+  geom_area(fill = "steelblue", alpha = 0.5) +
+  xlab("date in 2012") +
+  ylab("Dayly average number of steps taken each 5 minutes") +
+  ggtitle("Average stimated steps measured each 5-minutes interval \n per day")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Time series plot of the average number of steps taken
+
+```{r}
+CentralMeasures <- rawData %>%
+  group_by(Interval = interval) %>% 
+  summarize( mean.step = mean(steps, na.rm = TRUE),
+             median.step = median(steps, na.rm = TRUE))
+ggplot(data=CentralMeasures, aes(x = Interval, y = mean.step)) +
+  geom_area(fill = "steelblue", alpha = 0.5) +
+  xlab("5-minute interval") +
+  ylab("average number of steps taken") +
+  ggtitle("Pattern of the average steps dayly by 5-minutes interval") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### The 5-minute interval that, on average, contains the maximum number of steps:
+
+```{r }
+CentralMeasures[which.max(CentralMeasures$median.step),]
+```
+### Handleling Misssing Data:
+
+```{r}
+k <- round(sum(is.na(rawData$steps))/length(rawData$steps)*100,2)
+print(paste("NAs Values represent the", as.character(k), "% of the total data"))
+```
+
+About 13.11% of the data are NA values, that is significatively big to biases the central measures as mean, median and mode. One way to impute the missing values is assign it the mean data value.
+
+In order to fill the NAs Values with the Mean, the script below search for each observation into the variable, and replace the NA value with the Average of Steps.
+
+```{r}
+rawData2 <- rawData 
+mean.val <- mean(rawData2$steps, na.rm = TRUE)
+
+for (k in 1:length(rawData2$steps)) {
+  if (is.na(rawData2$steps[k])) rawData2$steps[k] <- mean.val                   
+}
+```
+
+### Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r}
+DaylySteps2 <- rawData2 %>%
+  group_by(Date = date) %>% 
+  summarize(Steps = sum(steps, na.rm = TRUE))
+
+ggplot(DaylySteps2, aes(x= Steps)) +
+  geom_histogram(binwidth = 1000,color = "white",
+                 fill = "steelblue", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")
+
+```
+```{r, echo=FALSE}
+print(paste("The Mean is: ", as.character(round(mean(DaylySteps2$Steps), 3))))
+```
+As could be observed in the Histogram above, the Average of steps increase from 9354.23 to 10766.189. Hence, is possible to conclude that NAs values biased the data.
+
+
+###  Comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r echo=TRUE, include=TRUE, results='hide'}
+is.weekday <- function(date) {
+  day <- weekdays(date)
+  if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+    return("Weekday")
+  else if (day %in% c("Saturday", "Sunday"))
+    return("Weekend")
+  else
+    stop("wrong data date")
+}
+
+Data <- rawData2
+Data$day <- sapply(as.Date(Data$date), FUN = is.weekday)
+Data$day <- as.factor(Data$day)
+
+CentralMeasures2 <- Data %>%
+  group_by(interval, day) %>% 
+  summarize( mean = mean(steps) )
+
+ggplot(data=CentralMeasures2,
+       aes(x=CentralMeasures2$interval,
+           y = CentralMeasures2$mean,
+           fill = CentralMeasures2$day)) +
+  geom_area(alpha = 0.6) +
+  scale_fill_manual(values = c("darkblue","steelblue")) +
+  xlab("5-minute interval") +
+  ylab("average number of steps taken") +
+  ggtitle("Pattern of the average steps on Weeksday or Weekend \n by 5-minutes interval") +
+  guides(fill = guide_legend(title = "")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
