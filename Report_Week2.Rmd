@@ -1,6 +1,6 @@
 ---
 title: "Assignment week 02"
-author: "Andrés Betancourt"
+author: "andresbmendoza"
 date: "6/15/2021"
 output: html_document
 ---
@@ -22,7 +22,8 @@ library(ggplot2)
 rawData <- read.csv("Data/activity.csv")
 ```
 
-### Histogram of Dayly Steps:
+### Mean total number of steps taken per day
+#### Histogram of Dayly Steps:
 
 ```{r echo=TRUE}
 
@@ -31,33 +32,15 @@ DaylySteps <- rawData %>%
   summarize(Steps = sum(steps, na.rm = TRUE))
 
 ggplot(DaylySteps, aes(x= Steps)) +
-  geom_histogram(binwidth = 1000,color = "white", fill = "steelblue", alpha = 0.5) +
-  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")
+  geom_histogram(binwidth = 1000, fill = "steelblue", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")+
+  geom_vline(aes(xintercept = median(x = Steps)), color = "blue")
 ```
 ```{r, echo=FALSE}
-print(paste("The Mean is: ", as.character(round(mean(DaylySteps$Steps), 3))))
+print(paste("The Mean in red line above  is: ", as.character(round(mean(DaylySteps$Steps), 3)), ", The Median in blue line above is:", as.character(round(median(DaylySteps$Steps), 3))))
 ```
 
-### Dayly Mean of number of steps by 5 mins
-
-```{r echo=TRUE}
-CentralMeasures1 <- rawData %>%
-  group_by(date = date) %>% 
-  summarize( mean.step = mean(steps, na.rm = TRUE),
-             median.step = median(steps, na.rm = TRUE))
-
-CentralMeasures1 <- as.data.frame(CentralMeasures1)
-CentralMeasures1$date <- as.Date(CentralMeasures1$date)
-
-ggplot(data= na.omit(CentralMeasures1), aes(x = date, y = mean.step)) +
-  geom_area(fill = "steelblue", alpha = 0.5) +
-  xlab("date in 2012") +
-  ylab("Dayly average number of steps taken each 5 minutes") +
-  ggtitle("Average stimated steps measured each 5-minutes interval \n per day")+
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-### Time series plot of the average number of steps taken
+### Dayly step Pattern by intervals
 
 ```{r}
 CentralMeasures <- rawData %>%
@@ -107,13 +90,14 @@ DaylySteps2 <- rawData2 %>%
 ggplot(DaylySteps2, aes(x= Steps)) +
   geom_histogram(binwidth = 1000,color = "white",
                  fill = "steelblue", alpha = 0.5) +
-  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red") +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "blue", lty = 4)
 
 ```
 ```{r, echo=FALSE}
-print(paste("The Mean is: ", as.character(round(mean(DaylySteps2$Steps), 3))))
+print(paste("The Mean in red line above  is: ", as.character(round(mean(DaylySteps2$Steps), 3)), ", The Median in blue line above is:", as.character(round(median(DaylySteps2$Steps), 3))))
 ```
-As could be observed in the Histogram above, the Average of steps increase from 9354.23 to 10766.189. Hence, is possible to conclude that NAs values biased the data.
+As could be observed in the Histogram above, the Average of steps increase from 9354.23 to 10766.189; and the Median and Mean are equal. Hence, is possible to conclude that NAs values biased the data.
 
 
 ###  Comparing the average number of steps taken per 5-minute interval across weekdays and weekends
@@ -137,15 +121,8 @@ CentralMeasures2 <- Data %>%
   group_by(interval, day) %>% 
   summarize( mean = mean(steps) )
 
-ggplot(data=CentralMeasures2,
-       aes(x=CentralMeasures2$interval,
-           y = CentralMeasures2$mean,
-           fill = CentralMeasures2$day)) +
-  geom_area(alpha = 0.6) +
-  scale_fill_manual(values = c("darkblue","steelblue")) +
-  xlab("5-minute interval") +
-  ylab("average number of steps taken") +
-  ggtitle("Pattern of the average steps on Weeksday or Weekend \n by 5-minutes interval") +
-  guides(fill = guide_legend(title = "")) +
-  theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(CentralMeasures2, aes(interval, mean, color = day)) + geom_line() + facet_grid(day ~ .) +
+        xlab("5-minute interval") + ylab("Number of steps")
+
 ```
