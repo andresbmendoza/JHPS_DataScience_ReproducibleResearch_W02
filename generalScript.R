@@ -14,7 +14,14 @@ DaylySteps <- rawData %>%                                                       
   summarize(Steps = sum(steps, na.rm = TRUE))
 
 ggplot(DaylySteps, aes(x= Steps)) +                                             # Create an histogram with ggplot
-  geom_histogram(binwidth = 1000,color = "white", fill = "steelblue", alpha = 0.5)
+  geom_histogram(binwidth = 1000, fill = "steelblue", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red")+
+  geom_vline(aes(xintercept = median(x = Steps)), color = "blue")
+
+print(paste("The Mean in red line above  is: ",                                 # Calc the mean an median to compare
+            as.character(round(mean(DaylySteps$Steps), 3)),
+            ", The Median in blue line above is:",
+            as.character(round(median(DaylySteps$Steps), 3))))
 
 ##============================================================================##
 #  3- Mean and median number of steps taken each day
@@ -78,8 +85,15 @@ DaylySteps2 <- rawData2 %>%                                                     
   summarize(Steps = sum(steps, na.rm = TRUE))
 
 ggplot(DaylySteps2, aes(x= Steps)) +                                            # Create an histogram with ggplot
-  geom_histogram(binwidth = 1000,color = "white", fill = "steelblue", alpha = 0.5)
+  geom_histogram(binwidth = 1000,
+               fill = "steelblue", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "red") +
+  geom_vline(aes(xintercept = mean(x = Steps)), color = "blue", lty = 4)
 
+print(paste("The Mean in red line above  is: ",
+            as.character(round(mean(DaylySteps2$Steps), 3)),
+            ", The Median in blue line above is:",
+            as.character(round(median(DaylySteps2$Steps), 3))))
 
 ##============================================================================##
 # 8- Panel plot comparing the average number of steps taken per 5-minute
@@ -119,3 +133,5 @@ ggplot(data=CentralMeasures2,
   ggtitle("Pattern of the average steps on Weeksday or Weekend \n by 5-minutes interval") +
   guides(fill = guide_legend(title = "")) +
   theme(plot.title = element_text(hjust = 0.5))
+
+
