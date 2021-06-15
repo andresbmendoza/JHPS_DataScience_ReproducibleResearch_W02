@@ -20,8 +20,8 @@ The variables included in this dataset are:
 ## files:
 
 This repository contain:
-* **Report_Week2.Rmd:** Reproducible R-Markdown file to perform the analysis and create the Repor in html format
-* **Report_Week2.html:** Analysis Report
-* **generalScript.R:** General script that contain the the chunk scripts to perform in the  markdown .Rmd File
+* **PA1_template.Rmd:** Reproducible R-Markdown file to perform the analysis and create the Repor in html format
+* **PA1_template.html:** Analysis Report
+* **PA1_template.R:** General script that contain the the chunk scripts to perform in the  markdown .Rmd File
 * **/Data:** Folder that contain de csv File.
 * **JHPS_DataScience_ReproducibleResearch_W02.Rproj:** R-Project file.
